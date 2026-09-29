@@ -1,0 +1,2395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRINT & PLAY - THERE IS NO ANTIMEMETICS PARTY GAME</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Space+Grotesk:wght@400;600;700;900&family=Cinzel:wght@700&display=swap');
+
+  :root {
+    --bg-dark: #0f1115;
+    --paper-bg: #f9f9fb;
+    --border-color: #1a1e24;
+    --accent-yellow: #f59e0b;
+    --hazard-yellow: #ffd000;
+    --stamp-red: #dc2626;
+    --cyan-glow: #06b6d4;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: #18191d;
+    color: #111;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* SCREEN CONTROLS */
+  .screen-banner {
+    background: #0b0d10;
+    color: #e5e7eb;
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--accent-yellow);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+  }
+  .screen-banner h1 {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.15rem;
+    letter-spacing: 2px;
+    color: var(--hazard-yellow);
+  }
+  .screen-banner p {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    margin-top: 4px;
+  }
+  .btn-print {
+    background: var(--hazard-yellow);
+    color: #000;
+    border: none;
+    padding: 12px 24px;
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: 900;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 4px;
+    box-shadow: 0 0 15px rgba(255, 208, 0, 0.4);
+    transition: all 0.2s;
+  }
+  .btn-print:hover {
+    background: #fff;
+    transform: scale(1.03);
+  }
+
+  /* PAGE CONTAINER */
+  .pnp-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+  }
+
+  /* A4 SHEET SIMULATION */
+  .sheet {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 20px auto 40px auto;
+    background: #ffffff;
+    padding: 10mm;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    position: relative;
+    page-break-after: always;
+    break-after: page;
+    box-sizing: border-box;
+  }
+
+  .sheet-header {
+    border-bottom: 2px solid #000;
+    padding-bottom: 5px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 8pt;
+    text-transform: uppercase;
+  }
+  .sheet-title {
+    font-weight: bold;
+    font-size: 10pt;
+    letter-spacing: 1px;
+  }
+  .sheet-footer {
+    position: absolute;
+    bottom: 5mm;
+    left: 10mm;
+    right: 10mm;
+    border-top: 1px solid #ccc;
+    padding-top: 4px;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 7pt;
+    color: #555;
+  }
+
+  /* CARDS GRID: 3 x 3 on A4 */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 62mm);
+    grid-auto-rows: 86mm;
+    gap: 3mm;
+    justify-content: center;
+  }
+
+  .card {
+    width: 62mm;
+    height: 86mm;
+    border: 1.5px solid #222;
+    background: #fff;
+    border-radius: 4px;
+    padding: 3mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  /* HAZARD BARS */
+  .hazard-stripe {
+    height: 4px;
+    background: repeating-linear-gradient(
+      -45deg,
+      #000,
+      #000 4px,
+      #ffd000 4px,
+      #ffd000 8px
+    );
+  }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed #666;
+    padding-bottom: 2px;
+    margin-top: 2px;
+  }
+  .card-code {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 7.5pt;
+    font-weight: 700;
+    color: #111;
+  }
+  .card-class {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 6.5pt;
+    padding: 1px 4px;
+    background: #111;
+    color: #fff;
+    border-radius: 2px;
+  }
+
+  .card-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin: auto 0;
+  }
+  .card-icon {
+    width: 28mm;
+    height: 28mm;
+    margin-bottom: 3mm;
+  }
+  .card-icon svg {
+    width: 100%;
+    height: 100%;
+    stroke: #111;
+    fill: none;
+    stroke-width: 1.8;
+  }
+  .card-name {
+    font-size: 11pt;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+    color: #000;
+  }
+  .card-subtext {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 6.5pt;
+    color: #555;
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+  }
+
+  .card-bottom {
+    border-top: 1px solid #111;
+    padding-top: 2.5px;
+    font-size: 5.5pt;
+    font-family: 'Share Tech Mono', monospace;
+    background: #f4f4f5;
+    padding: 2.5px 3px;
+    border-radius: 2px;
+  }
+  .card-loop-hint {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5px;
+    color: #222;
+  }
+  .card-loop-hint span b {
+    color: #000;
+  }
+
+  /* CARD BACK DESIGN */
+  .card-back {
+    background: #0f1115;
+    color: #e5e7eb;
+    border: 2px solid #27272a;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6mm 4mm;
+    text-align: center;
+  }
+  .card-back .back-logo {
+    width: 24mm;
+    height: 24mm;
+    opacity: 0.85;
+  }
+  .card-back h2 {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9pt;
+    letter-spacing: 2px;
+    color: var(--hazard-yellow);
+    margin-top: 4px;
+  }
+  .card-back .redacted-bar {
+    display: inline-block;
+    background: #fff;
+    color: #000;
+    padding: 1px 6px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 6.5pt;
+    font-weight: bold;
+    margin: 4px 0;
+  }
+  .card-back p {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 6pt;
+    color: #71717a;
+    line-height: 1.3;
+  }
+
+  /* FIELD DIRECTIVE & REFERENCE MATRIX DUAL-SIDE SYSTEM */
+  .directives-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 90mm);
+    grid-auto-rows: 125mm;
+    gap: 6mm;
+    justify-content: center;
+  }
+
+  .directive-card {
+    width: 90mm;
+    height: 125mm;
+    border: 2px solid #000;
+    background: #fff;
+    border-radius: 5px;
+    padding: 3mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+    page-break-inside: avoid;
+    position: relative;
+    overflow: hidden;
+  }
+  .directive-header {
+    background: #000;
+    color: #ffd000;
+    padding: 3px 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 7.5pt;
+    font-weight: bold;
+    border-radius: 2px;
+  }
+  .lockdown-indicator {
+    font-size: 6.5pt;
+    font-family: 'Share Tech Mono', monospace;
+    background: #fee2e2;
+    border-left: 3px solid #dc2626;
+    padding: 2px 5px;
+    margin: 2mm 0;
+    line-height: 1.25;
+  }
+  .recap-step {
+    border-left: 2px solid #111;
+    padding-left: 5px;
+    margin-bottom: 2mm;
+    font-size: 6.5pt;
+    line-height: 1.35;
+  }
+  .recap-step-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 7pt;
+    font-weight: bold;
+    color: #b45309;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+  }
+  .directive-footer {
+    border-top: 1px dashed #666;
+    padding-top: 2px;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 6pt;
+    color: #555;
+  }
+
+  .matrix-card {
+    width: 90mm;
+    height: 125mm;
+    border: 2px solid #000;
+    background: #fff;
+    border-radius: 5px;
+    padding: 3mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+    page-break-inside: avoid;
+    position: relative;
+  }
+  .matrix-header {
+    background: #000;
+    color: #ffd000;
+    padding: 3px 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 7.5pt;
+    font-weight: bold;
+    border-radius: 2px;
+  }
+  .loop-track {
+    margin: 2mm 0;
+    border: 1.5px solid #000;
+    padding: 2mm;
+    background: #fafafa;
+    border-radius: 4px;
+  }
+  .loop-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: bold;
+    font-size: 7.5pt;
+    margin-bottom: 1.5mm;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .loop-slot {
+    border: 1px dashed #444;
+    background: #fff;
+    padding: 1.8mm;
+    margin-bottom: 1.5mm;
+    border-radius: 3px;
+  }
+  .slot-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 7pt;
+    font-weight: 700;
+    color: #b45309;
+    text-transform: uppercase;
+  }
+  .slot-phrase {
+    font-size: 8pt;
+    font-weight: 700;
+    color: #000;
+    margin-top: 1px;
+  }
+  .slot-desc {
+    font-size: 6pt;
+    color: #555;
+    margin-top: 1px;
+  }
+  .token-accum-track {
+    border: 1.5px solid #000;
+    background: #fff;
+    padding: 2mm;
+    border-radius: 4px;
+  }
+  .accum-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 6.8pt;
+    font-weight: bold;
+    color: #000;
+    margin-bottom: 1.5mm;
+    display: flex;
+    justify-content: space-between;
+  }
+  .accum-slots-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 2mm;
+  }
+  .accum-slot {
+    flex: 1;
+    height: 8mm;
+    border: 1.5px dashed #000;
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 6.5pt;
+    font-weight: bold;
+    background: #fafafa;
+  }
+  .accum-slot.win {
+    background: #ffd000;
+    border: 1.5px solid #000;
+  }
+
+  /* TOKENS SHEET */
+  .tokens-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 28mm);
+    grid-auto-rows: 28mm;
+    gap: 3mm;
+    justify-content: center;
+  }
+  .token {
+    width: 28mm;
+    height: 28mm;
+    border: 2px dashed #000;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #ffd000;
+    color: #000;
+    text-align: center;
+    box-sizing: border-box;
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .token-pts {
+    font-size: 13pt;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .token-label {
+    font-size: 5pt;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    margin-top: 1px;
+  }
+
+  /* BUZZER TARGET PAD */
+  .buzzer-pad-target {
+    width: 170mm;
+    height: 170mm;
+    margin: 10mm auto;
+    border: 8px solid #000;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffe14c 0%, #f59e0b 60%, #b45309 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 0 0 6px #ffd000, 0 10px 25px rgba(0,0,0,0.3);
+  }
+  .buzzer-hazard-ring {
+    position: absolute;
+    width: 92%;
+    height: 92%;
+    border-radius: 50%;
+    border: 6px dashed #000;
+    pointer-events: none;
+  }
+  .buzzer-title {
+    font-family: 'Cinzel', serif;
+    font-size: 20pt;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #000;
+  }
+  .buzzer-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10pt;
+    font-weight: 700;
+    background: #000;
+    color: #ffd000;
+    padding: 3px 12px;
+    border-radius: 4px;
+    margin: 8px 0;
+  }
+
+  /* PRINT RULES */
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  @media print {
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #fff !important;
+      width: 210mm !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+    .screen-banner {
+      display: none !important;
+    }
+    .pnp-container {
+      margin: 0 !important;
+      padding: 0 !important;
+      max-width: none !important;
+      width: 210mm !important;
+    }
+    .sheet {
+      margin: 0 !important;
+      box-shadow: none !important;
+      width: 210mm !important;
+      min-height: 297mm !important;
+      height: 297mm !important;
+      page-break-after: always !important;
+      page-break-inside: avoid !important;
+      break-after: page !important;
+      padding: 8mm 6mm !important;
+      box-sizing: border-box !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="screen-banner">
+  <div>
+    <h1>UNOFFICIAL PRINT &amp; PLAY // THERE IS NO ANTIMEMETICS PARTY GAME (UNOFFICIAL)</h1>
+    <p>Independent fan-made print-ready document in A4 format. Not affiliated with qntm or any book/short story authors.</p>
+  </div>
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <a href="pnp.pdf" download="There_Is_No_Antimemetics_Party_Game_PNP.pdf" class="btn-print" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: #dc2626; color: #fff; box-shadow: 0 0 15px rgba(220, 38, 38, 0.4);">
+      📥 DOWNLOAD PDF FILE (13 PAGES)
+    </a>
+    <button class="btn-print" onclick="window.print()">🖨️ BROWSER PRINT</button>
+  </div>
+</div>
+
+<div class="pnp-container">
+
+  <!-- ==================== SHEET 1: PROTOCOL DOSSIER & AUTONOMOUS TEST DRILL ==================== -->
+  <div class="sheet">
+    <div class="sheet-header">
+      <span class="sheet-title">SCP ANTIMEMETICS DIVISION // OPERATIONAL FIELD PROTOCOL [UNOFFICIAL]</span>
+      <span>DOC: PnP-ANM-00-ALPHA</span>
+    </div>
+    <div class="hazard-stripe"></div>
+
+    <div style="margin: 10px 0 14px 0; display: flex; gap: 15px; align-items: center;">
+      <div style="flex: 1;">
+        <h2 style="font-size: 16pt; font-weight: 900; letter-spacing: -0.5px; text-transform: uppercase;">
+          There Is No Antimemetics Party Game <span style="font-size: 9pt; color: #dc2626; border: 1.5px solid #dc2626; padding: 1px 6px; vertical-align: middle; border-radius: 3px;">UNOFFICIAL</span>
+        </h2>
+        <div style="font-family: 'Share Tech Mono', monospace; font-size: 8pt; color: #b45309; margin-top: 2px;">
+          UNOFFICIAL FAN WORK // NO AFFILIATION WITH QNTM, SCP AUTHORS, OR SHORT STORY CREATORS
+        </div>
+      </div>
+      <div style="border: 2px solid #dc2626; color: #dc2626; padding: 4px 10px; font-family: 'Share Tech Mono', monospace; font-weight: bold; font-size: 9pt; transform: rotate(-3deg);">
+        COGNITOHAZARD CLEARANCE: LEVEL 4
+      </div>
+    </div>
+
+    <!-- UNOFFICIAL AFFILIATION DISCLAIMER -->
+    <div style="background: #fef2f2; border: 1px solid #f87171; border-left: 3px solid #dc2626; padding: 4px 8px; margin-bottom: 8px; font-family: 'Share Tech Mono', monospace; font-size: 6.8pt; color: #7f1d1d; line-height: 1.35;">
+      <b>⚠️ UNOFFICIAL FAN CREATION:</b> This is an independent, non-commercial tribute game inspired by qntm's (Sam Hughes) <i>"There Is No Antimemetics Division"</i> and the SCP Foundation collaborative wiki. It is completely unofficial and possesses <b>no affiliation, authorization, sponsorship, or endorsement</b> from qntm or the creators/authors of the books and short stories.
+    </div>
+
+    <!-- 0. OPERATIONAL TABLETOP SETUP -->
+    <div style="background: #fdfaf0; border: 1.5px solid #d97706; padding: 6px 10px; margin-bottom: 9px; border-radius: 4px; font-size: 7.5pt;">
+      <div style="font-family: 'Share Tech Mono', monospace; font-weight: bold; color: #92400e; font-size: 8.5pt; margin-bottom: 3px; display: flex; justify-content: space-between;">
+        <span>⚙️ 0. GAME SETUP</span>
+        <span>STANDARD TABLETOP DISPOSITION</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; line-height: 1.35;">
+        <div>
+          <b>1. Reference Sheets:</b> Give each player 1 double-sided Reference Sheet (Front: <i>Field Directive Index</i>; Reverse: <i>Conceptual Reference Matrix</i>).
+        </div>
+        <div>
+          <b>2. Buzzer &amp; Tokens:</b> Place the <b>Giant Foam Buzzer</b> in the center of the table, with the reserve bank of <b>44 Point Tokens</b> beside it.
+        </div>
+        <div style="grid-column: span 2; border-top: 1px dashed #d97706; padding-top: 3px; margin-top: 1px;">
+          <b>3. Deck:</b> Shuffle the <b>50 Anomaly Cards</b> and place them face-down as the draw deck.
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 7.8pt; line-height: 1.4;">
+      <div>
+        <h3 style="font-size: 8.5pt; font-family: 'Share Tech Mono', monospace; background: #000; color: #ffd000; padding: 2px 6px; margin-bottom: 5px;">1. ROUND SETUP (INITIALIZATION)</h3>
+        <p>1. <b>Reveal 5 to 7 cards</b> face-up in the center of the table.</p>
+        <p style="margin-top: 3px;">2. <b>Memorize (15s):</b> All players observe and memorize the cards. Then turn them face-down and shuffle them together (induced amnesia).</p>
+        <p style="margin-top: 3px;">3. <b>The Anomaly:</b> The Active Researcher secretly looks at <b>one</b> of these cards without showing anyone. This card is the Anomaly.</p>
+
+        <h3 style="font-size: 8.5pt; font-family: 'Share Tech Mono', monospace; background: #000; color: #ffd000; padding: 2px 6px; margin: 9px 0 5px 0;">2. GIVING CLUES (THE DEGRADATION LOOP)</h3>
+        <p>The Researcher puts <b>1 Point Token</b> on their Matrix to start. Then, recite clues rhythmically in a continuous loop:</p>
+        <div style="background: #f4f4f5; border-left: 3px solid #b45309; padding: 4px 7px; margin: 4px 0; font-family: 'Share Tech Mono', monospace; font-size: 7.2pt; line-height: 1.3;">
+          1. <b>Action:</b> "It does not [Verb]" <i>(e.g., does not fly)</i><br>
+          2. <b>State:</b> "It is not [Adjective]" <i>(e.g., is not soft)</i><br>
+          3. <b>Anatomy:</b> "It has no [Property]" <i>(e.g., has no wheels)</i><br>
+          4. <b>Taxonomy:</b> "It does not belong to [Category]" <i>(e.g., not food)</i>
+        </div>
+        <p style="margin-top: 3px;">• <b>Escalating Stakes:</b> Every time the Researcher completes all 4 lines, add <b>+1 Point Token</b> and immediately start the next loop.</p>
+        <p style="margin-top: 3px; color: #b91c1c; font-weight: bold; font-size: 7.3pt;">
+          🚨 <b>BREACH:</b> Naming any <u>positive</u> property causes an immediate breach: the round ends instantly with <b>0 points for everyone!</b>
+        </p>
+      </div>
+
+      <div>
+        <h3 style="font-size: 8.5pt; font-family: 'Share Tech Mono', monospace; background: #000; color: #ffd000; padding: 2px 6px; margin-bottom: 5px;">3. GUESSING &amp; SCORING (INTERCEPTION)</h3>
+        <p>• <b>Hit the Buzzer Anytime:</b> Any player can slam the buzzer at any moment—even mid-sentence! The Researcher <b>must stop speaking immediately</b>.</p>
+        <p style="margin-top: 3px;">• <b>1 Guess per Round:</b> Each player gets exactly one guess per round.</p>
+        
+        <p style="margin-top: 4px;">❌ <b>Wrong Guess (Lockdown):</b> Rotate your Reference Sheet <b>90° sideways</b>. You cannot speak or guess again this round. The Researcher <b>resumes the loop</b> from where they were interrupted.</p>
+
+        <div style="background: #fef2f2; border: 1.5px solid #dc2626; padding: 4px 6px; margin: 5px 0; border-radius: 3px; font-size: 7.2pt; color: #991b1b; line-height: 1.3;">
+          ⚠️ <b>LAST PLAYER STANDING RULE:</b><br>
+          If all guessing players except one are locked out, <b>the round ends immediately!</b> The last remaining player <u>loses the chance to guess</u> (you cannot wait safely for everyone else to fail!).
+        </div>
+
+        <p style="margin-top: 4px;">🟢 <b>Correct Guess (Mutual Survival):</b> The Researcher claims all tokens on their Matrix; the guessing player gets an equal amount from the reserve. Pass the Researcher role clockwise.</p>
+        <p style="margin-top: 3px;">🔴 <b>Total Erasure:</b> If everyone fails (or the round is closed early by the Last Player rule), the Anomaly escapes. <b>0 points awarded.</b></p>
+        <p style="margin-top: 4px; font-weight: bold; background: #fef08a; padding: 2px 4px; border-radius: 2px; display: inline-block;">
+          🏆 VICTORY: First player to reach <b>7 Points</b> wins immediately!
+        </p>
+      </div>
+    </div>
+
+    <!-- AUTONOMOUS TEST INSTRUCTIONS -->
+    <div style="margin-top: 14px; border: 2px solid #000; background: #fffbe6; padding: 10px 12px; border-radius: 4px;">
+      <div style="font-family: 'Share Tech Mono', monospace; font-size: 9.5pt; font-weight: bold; color: #92400e; display: flex; justify-content: space-between;">
+        <span>🧪 AUTONOMOUS TESTING PROTOCOL (SOLO PLAYTEST DRILL)</span>
+        <span>MODE: QUARANTINE SIMULATOR</span>
+      </div>
+      <p style="font-size: 7.5pt; margin-top: 4px; line-height: 1.4;">
+        Field Agents can test and calibrate the game <b>completely autonomously</b> after printing with this individual verification drill:
+      </p>
+      <ol style="font-size: 7.5pt; margin-left: 18px; margin-top: 4px; line-height: 1.4;">
+        <li><b>Amnesia Setup:</b> Take 6 random Subject Cards from the archive, memorize them for 20 seconds, and place them face down in a row.</li>
+        <li><b>Inverse Negative Synthesis:</b> Draw the target anomaly card blindly (or use the companion site). Formulate aloud 3 complete Degradation Loops (exactly 12 negative constraints: 3 Actions, 3 States, 3 Anatomies, 3 Taxonomies) that distinguish the target without naming positive traits.</li>
+        <li><b>Timed Interception:</b> Start a 15-second countdown timer, flip the 6 face-down cards, and identify the Anomaly instantly using only your negative parameters. If correct on the first attempt, claim the loop yield points (1 to 3 tokens). If you hesitate or misidentify, mark 1 Containment Breach. Reach 7 Yield Points before 3 breaches to achieve solo certification!</li>
+      </ol>
+    </div>
+
+    <div class="sheet-footer">
+      <span>SCP ANTIMEMETICS DIVISION // UNOFFICIAL FAN WORK</span>
+      <span>PAGE 1 OF 13 - FIELD PROTOCOL MANUAL [UNOFFICIAL]</span>
+    </div>
+  </div>
+
+  <!-- ==================== SHEET 2: CARDS 1 TO 9 ==================== -->
+  <div class="sheet">
+    <div class="sheet-header">
+      <span class="sheet-title">AUTHORIZED TESTING SUBJECTS // BATCH 01</span>
+      <span>ANM-001 TO ANM-009</span>
+    </div>
+    <div class="cards-grid">
+      <!-- 1. Wristwatch -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top">
+          <span class="card-code">ANM-001</span>
+          <span class="card-class">SAFE</span>
+        </div>
+        <div class="card-center">
+          <div class="card-icon">
+            <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="26" /><rect x="42" y="8" width="16" height="16" rx="2" /><rect x="42" y="76" width="16" height="16" rx="2" /><polyline points="50,34 50,50 62,50" /></svg>
+          </div>
+          <div class="card-name">Wristwatch</div>
+          <div class="card-subtext">CHRONO ARTIFACT</div>
+        </div>
+        <div class="card-bottom">
+          <div class="card-loop-hint">
+            <span><b>Act:</b> Does not fly</span>
+            <span><b>Stat:</b> Is not soft</span>
+            <span><b>Anat:</b> Has no blades</span>
+            <span><b>Tax:</b> Not edible</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Umbrella -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top">
+          <span class="card-code">ANM-002</span>
+          <span class="card-class">SAFE</span>
+        </div>
+        <div class="card-center">
+          <div class="card-icon">
+            <svg viewBox="0 0 100 100"><path d="M15,50 C15,28 85,28 85,50 Z" /><line x1="50" y1="50" x2="50" y2="78" /><path d="M50,78 C50,84 42,84 42,78" /></svg>
+          </div>
+          <div class="card-name">Umbrella</div>
+          <div class="card-subtext">CANOPY SHIELD</div>
+        </div>
+        <div class="card-bottom">
+          <div class="card-loop-hint">
+            <span><b>Act:</b> Does not emit light</span>
+            <span><b>Stat:</b> Is not rigid</span>
+            <span><b>Anat:</b> Has no wheels</span>
+            <span><b>Tax:</b> Not an animal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Coffee Mug -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top">
+          <span class="card-code">ANM-003</span>
+          <span class="card-class">SAFE</span>
+        </div>
+        <div class="card-center">
+          <div class="card-icon">
+            <svg viewBox="0 0 100 100"><path d="M25,30 L75,30 L70,75 L30,75 Z" /><path d="M72,38 C84,38 84,62 71,62" /><line x1="38" y1="22" x2="38" y2="26" /><line x1="50" y1="20" x2="50" y2="26" /><line x1="62" y1="22" x2="62" y2="26" /></svg>
+          </div>
+          <div class="card-name">Coffee Mug</div>
+          <div class="card-subtext">VESSEL RECEPTACLE</div>
+        </div>
+        <div class="card-bottom">
+          <div class="card-loop-hint">
+            <span><b>Act:</b> Does not walk</span>
+            <span><b>Stat:</b> Is not sharp</span>
+            <span><b>Anat:</b> Has no strings</span>
+            <span><b>Tax:</b> Not a vehicle</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Toothbrush -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top">
+          <span class="card-code">ANM-004</span>
+          <span class="card-class">SAFE</span>
+        </div>
+        <div class="card-center">
+          <div class="card-icon">
+            <svg viewBox="0 0 100 100"><rect x="45" y="40" width="10" height="48" rx="4" /><rect x="42" y="16" width="16" height="24" rx="3" /><line x1="36" y1="20" x2="42" y2="20" /><line x1="36" y1="26" x2="42" y2="26" /><line x1="36" y1="32" x2="42" y2="32" /></svg>
+          </div>
+          <div class="card-name">Toothbrush</div>
+          <div class="card-subtext">BRISTLE HYGIENE TOOL</div>
+        </div>
+        <div class="card-bottom">
+          <div class="card-loop-hint">
+            <span><b>Act:</b> Does not make noise</span>
+            <span><b>Stat:</b> Is not pure metal</span>
+            <span><b>Anat:</b> Has no screen</span>
+            <span><b>Tax:</b> Not armor</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Frying Pan -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top">
+          <span class="card-code">ANM-005</span>
+          <span class="card-class">SAFE</span>
+        </div>
+        <div class="card-center">
+          <div class="card-icon">
+            <svg viewBox="0 0 100 100"><ellipse cx="44" cy="50" rx="28" ry="24" /><path d="M72,50 L94,50" stroke-width="6" stroke-linecap="round" /></svg>
+          </div>
+          <div class="card-name">Frying Pan</div>
+          <div class="card-subtext">THERMAL COOKWARE</div>
+        </div>
+        <div class="card-bottom">
+          <div class="card-loop-hint">
+            <span><b>Act:</b> Does not write</span>
+            <span><b>Stat:</b> Is not transparent</span>
+            <span><b>Anat:</b> Has no fur</span>
+            <span><b>Tax:</b> Not apparel</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Shoelace -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top">
+          <span class="card-code">ANM-006</span>
+          <span class="card-class">SAFE</span>
+        </div>
+        <div class="card-center">
+          <div class="card-icon">
+            <svg viewBox="0 0 100 100"><path d="M20,30 C50,20 30,80 80,70" /><circle cx="20" cy="30" r="3" fill="#111" /><circle cx="80" cy="70" r="3" fill="#111" /></svg>
+          </div>
+          <div class="card-name">Shoelace</div>
+          <div class="card-subtext">FIBROUS FASTENER</div>
+        </div>
+        <div class="card-bottom">
+          <div class="card-loop-hint">
+            <span><b>Act:</b> Does not cut</span>
+            <span><b>Stat:</b> Is not electronic</span>
+            <span><b>Anat:</b> Has no sharp edges</span>
+            <span><b>Tax:</b> Not a mineral</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. Toaster -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top">
+          <span class="card-code">ANM-007</span>
+          <span class="card-class">SAFE</span>
+        </div>
+        <div class="card-center">
+          <div class="card-icon">
+            <svg viewBox="0 0 100 100"><rect x="22" y="38" width="56" height="42" rx="8" /><rect x="34" y="24" width="14" height="14" /><rect x="52" y="24" width="14" height="14" /><line x1="78" y1="52" x2="88" y2="52" stroke-width="4" stroke-linecap="round" /></svg>
+          </div>
+          <div class="card-name">Toaster</div>
+          <div class="card-subtext">HEATING APPLIANCE</div>
+        </div>
+        <div class="card-bottom">
+          <div class="card-loop-hint">
+            <span><b>Act:</b> Is not worn</span>
+            <span><b>Stat:</b> Is not organic</span>
+            <span><b>Anat:</b> Has no lenses</span>
+            <span><b>Tax:</b> Not flora</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. Passport -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top">
+          <span class="card-code">ANM-008</span>
+          <span class="card-class">SAFE</span>
+        </div>
+        <div class="card-center">
+          <div class="card-icon">
+            <svg viewBox="0 0 100 100"><rect x="26" y="20" width="48" height="62" rx="4" /><circle cx="50" cy="46" r="14" stroke-dasharray="3,3" /><line x1="38" y1="68" x2="62" y2="68" /></svg>
+          </div>
+          <div class="card-name">Passport</div>
+          <div class="card-subtext">IDENTITY DOCUMENT</div>
+        </div>
+        <div class="card-bottom">
+          <div class="card-loop-hint">
+            <span><b>Act:</b> Does not heat up</span>
+            <span><b>Stat:</b> Is not heavy</span>
+            <span><b>Anat:</b> Has no gears</span>
+            <span><b>Tax:</b> Not hardware</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9. Lightbulb -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top">
+          <span class="card-code">ANM-009</span>
+          <span class="card-class">SAFE</span>
+        </div>
+        <div class="card-center">
+          <div class="card-icon">
+            <svg viewBox="0 0 100 100"><path d="M35,45 C35,28 65,28 65,45 C65,55 58,58 58,68 L42,68 C42,58 35,55 35,45 Z" /><rect x="44" y="68" width="12" height="10" /><path d="M47,50 L50,42 L53,50" /></svg>
+          </div>
+          <div class="card-name">Lightbulb</div>
+          <div class="card-subtext">ILLUMINATION EMITTER</div>
+        </div>
+        <div class="card-bottom">
+          <div class="card-loop-hint">
+            <span><b>Act:</b> Does not read</span>
+            <span><b>Stat:</b> Is not liquid</span>
+            <span><b>Anat:</b> Has no handle</span>
+            <span><b>Tax:</b> Not a container</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sheet-footer">
+      <span>SCP ANTIMEMETICS DIVISION - EYES ONLY</span>
+      <span>PAGE 2 OF 13 - SUBJECTS 01-09</span>
+    </div>
+  </div>
+
+  <!-- ==================== SHEET 3: CARDS 10 TO 18 ==================== -->
+  <div class="sheet">
+    <div class="sheet-header">
+      <span class="sheet-title">AUTHORIZED TESTING SUBJECTS // BATCH 02</span>
+      <span>ANM-010 TO ANM-018</span>
+    </div>
+    <div class="cards-grid">
+      <!-- 10. Coin -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-010</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="32" /><circle cx="50" cy="50" r="24" stroke-dasharray="4,2" /><text x="50" y="58" font-size="24" text-anchor="middle" font-family="monospace" fill="#111">1</text></svg></div>
+          <div class="card-name">Coin</div><div class="card-subtext">CURRENCY DISC</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not float</span><span><b>Stat:</b> Is not soft</span><span><b>Anat:</b> Has no holes</span><span><b>Tax:</b> Not fabric</span></div></div>
+      </div>
+
+      <!-- 11. Scissors -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-011</span><span class="card-class">EUCLID</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><circle cx="35" cy="75" r="12" /><circle cx="65" cy="75" r="12" /><line x1="42" y1="66" x2="68" y2="24" stroke-width="3" /><line x1="58" y1="66" x2="32" y2="24" stroke-width="3" /><circle cx="50" cy="52" r="3" fill="#111" /></svg></div>
+          <div class="card-name">Scissors</div><div class="card-subtext">SHEARING BLADES</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not glue</span><span><b>Stat:</b> Is not spherical</span><span><b>Anat:</b> Has no legs</span><span><b>Tax:</b> Not a firearm</span></div></div>
+      </div>
+
+      <!-- 12. Stapler -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-012</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><path d="M20,68 L80,68 L80,76 L20,76 Z" /><path d="M24,68 L32,38 L84,48 L80,68" /></svg></div>
+          <div class="card-name">Stapler</div><div class="card-subtext">BINDING MECHANISM</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not dissolve</span><span><b>Stat:</b> Is not flexible</span><span><b>Anat:</b> Has no wheels</span><span><b>Tax:</b> Not furniture</span></div></div>
+      </div>
+
+      <!-- 13. Backpack -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-013</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><rect x="28" y="30" width="44" height="52" rx="10" /><rect x="36" y="54" width="28" height="22" rx="4" /><path d="M38,30 C38,18 62,18 62,30" /></svg></div>
+          <div class="card-name">Backpack</div><div class="card-subtext">PORTABLE SATCHEL</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not freeze</span><span><b>Stat:</b> Is not fragile</span><span><b>Anat:</b> Has no engine</span><span><b>Tax:</b> Not liquid</span></div></div>
+      </div>
+
+      <!-- 14. Pillow -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-014</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><path d="M22,35 Q50,26 78,35 Q86,50 78,65 Q50,74 22,65 Q14,50 22,35 Z" /><circle cx="50" cy="50" r="2" fill="#111" /></svg></div>
+          <div class="card-name">Pillow</div><div class="card-subtext">CUSHION MATRIX</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not bounce</span><span><b>Stat:</b> Is not rigid</span><span><b>Anat:</b> Has no corners</span><span><b>Tax:</b> Not metal</span></div></div>
+      </div>
+
+      <!-- 15. Hairbrush -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-015</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><ellipse cx="50" cy="38" rx="18" ry="24" /><line x1="50" y1="62" x2="50" y2="88" stroke-width="6" stroke-linecap="round" /><line x1="42" y1="30" x2="42" y2="46" /><line x1="50" y1="26" x2="50" y2="50" /><line x1="58" y1="30" x2="58" y2="46" /></svg></div>
+          <div class="card-name">Hairbrush</div><div class="card-subtext">GROOMING COMB</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not cook</span><span><b>Stat:</b> Is not edible</span><span><b>Anat:</b> Has no display</span><span><b>Tax:</b> Not a potion</span></div></div>
+      </div>
+
+      <!-- 16. Keyboard -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-016</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><rect x="15" y="32" width="70" height="36" rx="4" /><line x1="22" y1="42" x2="78" y2="42" stroke-dasharray="6,4" /><line x1="22" y1="50" x2="78" y2="50" stroke-dasharray="6,4" /><line x1="34" y1="58" x2="66" y2="58" stroke-width="3" /></svg></div>
+          <div class="card-name">Keyboard</div><div class="card-subtext">INPUT TERMINAL</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Cannot be drunk</span><span><b>Stat:</b> Is not foldable</span><span><b>Anat:</b> Has no radio antenna</span><span><b>Tax:</b> Not dinnerware</span></div></div>
+      </div>
+
+      <!-- 17. Guitar -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-017</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><circle cx="50" cy="66" r="20" /><circle cx="50" cy="42" r="14" /><rect x="47" y="10" width="6" height="26" /><circle cx="50" cy="54" r="5" fill="#111" /></svg></div>
+          <div class="card-name">Guitar</div><div class="card-subtext">STRING RESONATOR</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not emit light</span><span><b>Stat:</b> Is not silent</span><span><b>Anat:</b> Has no typing keys</span><span><b>Tax:</b> Not footwear</span></div></div>
+      </div>
+
+      <!-- 18. Tape Measure -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-018</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><rect x="25" y="35" width="46" height="42" rx="10" /><circle cx="48" cy="56" r="10" /><path d="M71,60 L88,60 L88,68" stroke-width="2" /></svg></div>
+          <div class="card-name">Tape Measure</div><div class="card-subtext">LINEAR EXTENSION</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not smell</span><span><b>Stat:</b> Is not edible</span><span><b>Anat:</b> Has no clock hands</span><span><b>Tax:</b> Not clothing</span></div></div>
+      </div>
+    </div>
+    <div class="sheet-footer">
+      <span>SCP ANTIMEMETICS DIVISION - EYES ONLY</span>
+      <span>PAGE 3 OF 13 - SUBJECTS 10-18</span>
+    </div>
+  </div>
+
+  <!-- ==================== SHEET 4: CARDS 19 TO 27 ==================== -->
+  <div class="sheet">
+    <div class="sheet-header">
+      <span class="sheet-title">AUTHORIZED TESTING SUBJECTS // BATCH 03</span>
+      <span>ANM-019 TO ANM-027</span>
+    </div>
+    <div class="cards-grid">
+      <!-- 19. Spoon -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-019</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><ellipse cx="50" cy="30" rx="12" ry="16" /><line x1="50" y1="46" x2="50" y2="86" stroke-width="5" stroke-linecap="round" /></svg></div>
+          <div class="card-name">Spoon</div><div class="card-subtext">CONCAVE UTENSIL</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not slice</span><span><b>Stat:</b> Is not pointed</span><span><b>Anat:</b> Has no cables</span><span><b>Tax:</b> Not a game</span></div></div>
+      </div>
+
+      <!-- 20. Envelope -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-020</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><rect x="18" y="32" width="64" height="42" /><polyline points="18,32 50,56 82,32" /></svg></div>
+          <div class="card-name">Envelope</div><div class="card-subtext">DOCUMENT SLEEVE</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not ring</span><span><b>Stat:</b> Is not waterproof</span><span><b>Anat:</b> Has no zippers</span><span><b>Tax:</b> Not rigid storage</span></div></div>
+      </div>
+
+      <!-- 21. Bicycle -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-021</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><circle cx="28" cy="62" r="14" /><circle cx="72" cy="62" r="14" /><polyline points="28,62 48,62 60,42 42,42 28,62" /><polyline points="48,62 54,34 50,30" /><line x1="60" y1="42" x2="72" y2="62" /></svg></div>
+          <div class="card-name">Bicycle</div><div class="card-subtext">PEDAL VEHICLE</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not burn gasoline</span><span><b>Stat:</b> Is not pocket-sized</span><span><b>Anat:</b> Has no engine</span><span><b>Tax:</b> Not a boat</span></div></div>
+      </div>
+
+      <!-- 22. Matchbox -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-022</span><span class="card-class">EUCLID</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><rect x="25" y="32" width="50" height="36" rx="3" /><rect x="28" y="36" width="38" height="28" fill="#f0f0f0" /><line x1="75" y1="36" x2="75" y2="64" stroke-width="4" /></svg></div>
+          <div class="card-name">Matchbox</div><div class="card-subtext">IGNITION PACKET</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not extinguish</span><span><b>Stat:</b> Is not nonflammable</span><span><b>Anat:</b> Has no battery</span><span><b>Tax:</b> Not cosmetics</span></div></div>
+      </div>
+
+      <!-- 23. Hammer -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-023</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><rect x="22" y="24" width="38" height="18" rx="2" /><path d="M60,24 Q76,28 76,42" stroke-width="3" /><rect x="44" y="42" width="10" height="46" rx="2" /></svg></div>
+          <div class="card-name">Hammer</div><div class="card-subtext">IMPACT TOOL</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not cut paper</span><span><b>Stat:</b> Is not plush</span><span><b>Anat:</b> Has no bristles</span><span><b>Tax:</b> Not stationery</span></div></div>
+      </div>
+
+      <!-- 24. Sunglasses -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-024</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><rect x="20" y="44" width="26" height="20" rx="4" fill="#333" /><rect x="54" y="44" width="26" height="20" rx="4" fill="#333" /><line x1="46" y1="48" x2="54" y2="48" stroke-width="3" /><line x1="20" y1="46" x2="10" y2="38" stroke-width="3" /><line x1="80" y1="46" x2="90" y2="38" stroke-width="3" /></svg></div>
+          <div class="card-name">Sunglasses</div><div class="card-subtext">POLARIZED OPTICS</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not amplify light</span><span><b>Stat:</b> Is not completely opaque</span><span><b>Anat:</b> Has no laces</span><span><b>Tax:</b> Not footwear</span></div></div>
+      </div>
+
+      <!-- 25. Anchor -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-025</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><circle cx="50" cy="22" r="7" /><line x1="50" y1="29" x2="50" y2="82" stroke-width="5" /><line x1="32" y1="42" x2="68" y2="42" stroke-width="5" /><path d="M22,62 C22,86 78,86 78,62" stroke-width="5" /></svg></div>
+          <div class="card-name">Anchor</div><div class="card-subtext">MOORING BALLAST</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not float</span><span><b>Stat:</b> Is not buoyant</span><span><b>Anat:</b> Has no threaded screws</span><span><b>Tax:</b> Not furniture</span></div></div>
+      </div>
+
+      <!-- 26. Book -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-026</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><path d="M50,34 C40,26 22,26 18,30 L18,74 C22,70 40,70 50,78 C60,70 78,70 82,74 L82,30 C78,26 60,26 50,34 Z" /><line x1="50" y1="34" x2="50" y2="78" /></svg></div>
+          <div class="card-name">Book</div><div class="card-subtext">BOUND CODEX</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not recharge batteries</span><span><b>Stat:</b> Is not single-use</span><span><b>Anat:</b> Has no microchip</span><span><b>Tax:</b> Not electronic hardware</span></div></div>
+      </div>
+
+      <!-- 27. Mirror -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-027</span><span class="card-class">EUCLID</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><ellipse cx="50" cy="48" rx="24" ry="32" /><ellipse cx="50" cy="48" rx="20" ry="28" stroke-dasharray="4,2" /><line x1="42" y1="80" x2="58" y2="80" stroke-width="4" /></svg></div>
+          <div class="card-name">Mirror</div><div class="card-subtext">SPECULAR SURFACE</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not absorb photons</span><span><b>Stat:</b> Is not rough</span><span><b>Anat:</b> Has no hollow chamber</span><span><b>Tax:</b> Not clothing</span></div></div>
+      </div>
+    </div>
+    <div class="sheet-footer">
+      <span>SCP ANTIMEMETICS DIVISION - EYES ONLY</span>
+      <span>PAGE 4 OF 13 - SUBJECTS 19-27</span>
+    </div>
+  </div>
+
+  <!-- ==================== SHEET 5: CARDS 28 TO 36 ==================== -->
+  <div class="sheet">
+    <div class="sheet-header">
+      <span class="sheet-title">AUTHORIZED TESTING SUBJECTS // BATCH 04</span>
+      <span>ANM-028 TO ANM-036</span>
+    </div>
+    <div class="cards-grid">
+      <!-- 28. Padlock -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-028</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><rect x="30" y="44" width="40" height="38" rx="4" /><path d="M38,44 L38,28 C38,18 62,18 62,28 L62,44" stroke-width="5" /><circle cx="50" cy="60" r="4" fill="#111" /></svg></div>
+          <div class="card-name">Padlock</div><div class="card-subtext">SHACKLE LATCH</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not open freely</span><span><b>Stat:</b> Is not elastic</span><span><b>Anat:</b> Has no fabric zipper</span><span><b>Tax:</b> Not a toy</span></div></div>
+      </div>
+
+      <!-- 29. Watering Can -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-029</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><path d="M30,42 L66,42 L62,78 L34,78 Z" /><path d="M30,50 C18,50 18,72 32,72" stroke-width="4" /><line x1="64" y1="48" x2="84" y2="34" stroke-width="4" /><circle cx="86" cy="32" r="4" /></svg></div>
+          <div class="card-name">Watering Can</div><div class="card-subtext">IRRIGATION CARRIER</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not desiccate</span><span><b>Stat:</b> Is not airtight</span><span><b>Anat:</b> Has no cutting edge</span><span><b>Tax:</b> Not flatware</span></div></div>
+      </div>
+
+      <!-- 30. Broom -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-030</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><line x1="68" y1="16" x2="42" y2="60" stroke-width="5" stroke-linecap="round" /><path d="M38,60 L50,66 L36,88 L20,80 Z" fill="#eee" /><line x1="24" y1="82" x2="44" y2="70" /></svg></div>
+          <div class="card-name">Broom</div><div class="card-subtext">SWEEPING APPARATUS</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not vacuum mechanically</span><span><b>Stat:</b> Is not compact</span><span><b>Anat:</b> Has no power cord</span><span><b>Tax:</b> Not an appliance</span></div></div>
+      </div>
+
+      <!-- 31. Refrigerator -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-031</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><rect x="30" y="16" width="40" height="68" rx="4" /><line x1="30" y1="40" x2="70" y2="40" /><line x1="36" y1="28" x2="36" y2="36" stroke-width="3" /><line x1="36" y1="48" x2="36" y2="62" stroke-width="3" /></svg></div>
+          <div class="card-name">Refrigerator</div><div class="card-subtext">COOLING VAULT</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not roast</span><span><b>Stat:</b> Is not light</span><span><b>Anat:</b> Has no exposed wheels</span><span><b>Tax:</b> Not living room furniture</span></div></div>
+      </div>
+
+      <!-- 32. Flashlight -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-032</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><path d="M30,36 L44,44 L44,76 L30,76 Z" transform="rotate(-30 40 50)" /><path d="M44,40 L60,30 L64,52 L44,48" transform="rotate(-30 40 50)" /></svg></div>
+          <div class="card-name">Flashlight</div><div class="card-subtext">BEAM PROJECTOR</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not generate shadows</span><span><b>Stat:</b> Is not stationary</span><span><b>Anat:</b> Has no oil wick</span><span><b>Tax:</b> Not a melee weapon</span></div></div>
+      </div>
+
+      <!-- 33. Chessboard -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-033</span><span class="card-class">EUCLID</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><rect x="24" y="24" width="52" height="52" /><rect x="24" y="24" width="26" height="26" fill="#111" /><rect x="50" y="50" width="26" height="26" fill="#111" /></svg></div>
+          <div class="card-name">Chessboard</div><div class="card-subtext">TACTICAL GRID</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not roll dice</span><span><b>Stat:</b> Is not chaotic</span><span><b>Anat:</b> Has no plastic playing cards</span><span><b>Tax:</b> Not a card game</span></div></div>
+      </div>
+
+      <!-- 34. Vinyl Record -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-034</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="32" /><circle cx="50" cy="50" r="22" stroke-dasharray="2,2" /><circle cx="50" cy="50" r="10" fill="#111" /><circle cx="50" cy="50" r="3" fill="#fff" /></svg></div>
+          <div class="card-name">Vinyl Record</div><div class="card-subtext">GROOVED AUDIO DISC</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not play without a needle</span><span><b>Stat:</b> Is not digital</span><span><b>Anat:</b> Has no USB port</span><span><b>Tax:</b> Not optical storage</span></div></div>
+      </div>
+
+      <!-- 35. Microwave -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-035</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><rect x="18" y="28" width="64" height="44" rx="4" /><rect x="24" y="34" width="40" height="32" rx="2" /><circle cx="72" cy="40" r="4" /><circle cx="72" cy="54" r="4" /></svg></div>
+          <div class="card-name">Microwave</div><div class="card-subtext">RADIATION CAVITY</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not freeze</span><span><b>Stat:</b> Is not purely mechanical</span><span><b>Anat:</b> Has no open flame</span><span><b>Tax:</b> Not bathroom fixtures</span></div></div>
+      </div>
+
+      <!-- 36. Battery -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-036</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><rect x="34" y="30" width="32" height="52" rx="3" /><rect x="44" y="24" width="12" height="6" /><line x1="44" y1="46" x2="56" y2="46" /><line x1="50" y1="40" x2="50" y2="52" /><line x1="44" y1="68" x2="56" y2="68" /></svg></div>
+          <div class="card-name">Battery</div><div class="card-subtext">VOLTAIC CELL</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not create energy from nothing</span><span><b>Stat:</b> Is not infinite</span><span><b>Anat:</b> Has no wall plug prongs</span><span><b>Tax:</b> Not a cable</span></div></div>
+      </div>
+    </div>
+    <div class="sheet-footer">
+      <span>SCP ANTIMEMETICS DIVISION - EYES ONLY</span>
+      <span>PAGE 5 OF 13 - SUBJECTS 28-36</span>
+    </div>
+  </div>
+
+  <!-- ==================== SHEET 6: CARDS 37 TO 45 ==================== -->
+  <div class="sheet">
+    <div class="sheet-header">
+      <span class="sheet-title">AUTHORIZED TESTING SUBJECTS // BATCH 05</span>
+      <span>ANM-037 TO ANM-045</span>
+    </div>
+    <div class="cards-grid">
+      <!-- 37. Syringe -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-037</span><span class="card-class">EUCLID</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><rect x="42" y="34" width="16" height="38" rx="2" /><line x1="50" y1="72" x2="50" y2="88" stroke-width="2" /><line x1="50" y1="34" x2="50" y2="18" stroke-width="4" /><line x1="40" y1="18" x2="60" y2="18" stroke-width="4" /></svg></div>
+          <div class="card-name">Syringe</div><div class="card-subtext">INJECTION CYLINDER</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Is not taken orally</span><span><b>Stat:</b> Is not blunt</span><span><b>Anat:</b> Has no crank handle</span><span><b>Tax:</b> Not medication itself</span></div></div>
+      </div>
+
+      <!-- 38. Thermometer -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-038</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><rect x="44" y="20" width="12" height="50" rx="6" /><circle cx="50" cy="74" r="12" /><line x1="50" y1="34" x2="50" y2="70" stroke-width="4" /></svg></div>
+          <div class="card-name">Thermometer</div><div class="card-subtext">THERMAL PROBE</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not heat objects actively</span><span><b>Stat:</b> Is not opaque</span><span><b>Anat:</b> Has no bulky battery</span><span><b>Tax:</b> Not a weighing scale</span></div></div>
+      </div>
+
+      <!-- 39. Corkscrew -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-039</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><line x1="30" y1="28" x2="70" y2="28" stroke-width="6" stroke-linecap="round" /><path d="M50,28 L50,44 Q60,50 50,56 Q40,62 50,68 Q60,74 50,80" stroke-width="3" fill="none" /></svg></div>
+          <div class="card-name">Corkscrew</div><div class="card-subtext">HELICAL EXTRACTOR</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not seal containers</span><span><b>Stat:</b> Is not straight</span><span><b>Anat:</b> Has no motor</span><span><b>Tax:</b> Not glassware</span></div></div>
+      </div>
+
+      <!-- 40. Cash Register -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-040</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><rect x="22" y="44" width="56" height="34" rx="4" /><rect x="30" y="24" width="40" height="20" /><line x1="28" y1="66" x2="72" y2="66" stroke-width="3" /></svg></div>
+          <div class="card-name">Cash Register</div><div class="card-subtext">TRANSACTION TERMINAL</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not dispense gratis</span><span><b>Stat:</b> Is not pocketable</span><span><b>Anat:</b> Has no built-in printing press</span><span><b>Tax:</b> Not a bank</span></div></div>
+      </div>
+
+      <!-- 41. Chainsaw -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-041</span><span class="card-class">KETER</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><rect x="20" y="44" width="30" height="24" rx="4" /><path d="M50,48 L86,48 L82,64 L50,64 Z" stroke-dasharray="3,2" /><path d="M14,48 C14,36 28,36 28,44" stroke-width="3" /></svg></div>
+          <div class="card-name">Chainsaw</div><div class="card-subtext">MOTORIZED CUTTER</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not caress gently</span><span><b>Stat:</b> Is not silent</span><span><b>Anat:</b> Has no smooth shears</span><span><b>Tax:</b> Not a toy</span></div></div>
+      </div>
+
+      <!-- 42. Compass -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-042</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" /><polygon points="50,26 56,50 50,46 44,50" fill="#111" /><polygon points="50,74 56,50 50,54 44,50" fill="#bbb" /></svg></div>
+          <div class="card-name">Compass</div><div class="card-subtext">MAGNETIC NAVIGATOR</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not track time</span><span><b>Stat:</b> Is not immune to poles</span><span><b>Anat:</b> Has no lithium battery</span><span><b>Tax:</b> Not a stopwatch</span></div></div>
+      </div>
+
+      <!-- 43. Telescope -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-043</span><span class="card-class">EUCLID</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><polygon points="26,62 76,32 78,42 26,68" /><line x1="48" y1="54" x2="38" y2="82" stroke-width="3" /><line x1="52" y1="52" x2="62" y2="82" stroke-width="3" /></svg></div>
+          <div class="card-name">Telescope</div><div class="card-subtext">LONG-RANGE OPTIC</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not view cellular microbes</span><span><b>Stat:</b> Is not handheld</span><span><b>Anat:</b> Has no microscope slides</span><span><b>Tax:</b> Not a microscope</span></div></div>
+      </div>
+
+      <!-- 44. Fire Extinguisher -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-044</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><rect x="36" y="38" width="28" height="46" rx="10" /><rect x="44" y="26" width="12" height="12" /><line x1="56" y1="30" x2="72" y2="40" stroke-width="4" /><path d="M42,22 L58,22" stroke-width="4" /></svg></div>
+          <div class="card-name">Fire Extinguisher</div><div class="card-subtext">SUPPRESSION CANISTER</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not fuel flame</span><span><b>Stat:</b> Is not combustible</span><span><b>Anat:</b> Has no fire hydrant hookup</span><span><b>Tax:</b> Not a scuba tank</span></div></div>
+      </div>
+
+      <!-- 45. Stethoscope -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-045</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><path d="M34,22 L34,42 C34,60 66,60 66,42 L66,22" stroke-width="4" /><circle cx="50" cy="74" r="10" /><line x1="50" y1="54" x2="50" y2="64" stroke-width="4" /></svg></div>
+          <div class="card-name">Stethoscope</div><div class="card-subtext">ACOUSTIC SENSOR</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not broadcast songs</span><span><b>Stat:</b> Is not motorized</span><span><b>Anat:</b> Has no Bluetooth transmitter</span><span><b>Tax:</b> Not earphones</span></div></div>
+      </div>
+    </div>
+    <div class="sheet-footer">
+      <span>SCP ANTIMEMETICS DIVISION - EYES ONLY</span>
+      <span>PAGE 6 OF 13 - SUBJECTS 37-45</span>
+    </div>
+  </div>
+
+  <!-- ==================== SHEET 7: CARDS 46 TO 50 + DIRECTIVE CARDS ==================== -->
+  <div class="sheet">
+    <div class="sheet-header">
+      <span class="sheet-title">AUTHORIZED TESTING SUBJECTS // BATCH 06 (FINAL)</span>
+      <span>ANM-046 TO ANM-050</span>
+    </div>
+    <div class="cards-grid">
+      <!-- 46. Barcode Scanner -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-046</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><path d="M30,30 L66,30 L60,54 L44,54 L36,80 L26,76 L36,46 Z" /></svg></div>
+          <div class="card-name">Barcode Scanner</div><div class="card-subtext">OPTICAL SENSOR</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not print price tags</span><span><b>Stat:</b> Is not passive</span><span><b>Anat:</b> Has no photo film</span><span><b>Tax:</b> Not a flatbed scanner</span></div></div>
+      </div>
+
+      <!-- 47. Handcuffs -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-047</span><span class="card-class">EUCLID</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><circle cx="32" cy="50" r="16" stroke-width="4" /><circle cx="68" cy="50" r="16" stroke-width="4" /><line x1="48" y1="50" x2="52" y2="50" stroke-width="6" /></svg></div>
+          <div class="card-name">Handcuffs</div><div class="card-subtext">RESTRAINT MANACLES</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not release freely</span><span><b>Stat:</b> Is not flexible</span><span><b>Anat:</b> Has no hemp rope</span><span><b>Tax:</b> Not decorative jewelry</span></div></div>
+      </div>
+
+      <!-- 48. Metronome -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-048</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><polygon points="34,80 66,80 58,26 42,26" /><line x1="50" y1="74" x2="62" y2="34" stroke-width="3" /><circle cx="58" cy="46" r="4" fill="#111" /></svg></div>
+          <div class="card-name">Metronome</div><div class="card-subtext">TEMPO REGULATOR</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not randomize tempo</span><span><b>Stat:</b> Is not polyphonic</span><span><b>Anat:</b> Has no subwoofer</span><span><b>Tax:</b> Not a musical instrument</span></div></div>
+      </div>
+
+      <!-- 49. Hourglass -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-049</span><span class="card-class">SAFE</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><line x1="28" y1="22" x2="72" y2="22" stroke-width="5" /><line x1="28" y1="78" x2="72" y2="78" stroke-width="5" /><path d="M34,22 C34,46 48,50 50,50 C52,50 66,46 66,22 Z" /><path d="M34,78 C34,54 48,50 50,50 C52,50 66,54 66,78 Z" /></svg></div>
+          <div class="card-name">Hourglass</div><div class="card-subtext">GRANULAR CHRONOMETER</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not consume power</span><span><b>Stat:</b> Is not LCD</span><span><b>Anat:</b> Has no hands or quartz</span><span><b>Tax:</b> Not a smartwatch</span></div></div>
+      </div>
+
+      <!-- 50. Boomerang -->
+      <div class="card">
+        <div class="hazard-stripe"></div>
+        <div class="card-top"><span class="card-code">ANM-050</span><span class="card-class">EUCLID</span></div>
+        <div class="card-center">
+          <div class="card-icon"><svg viewBox="0 0 100 100"><path d="M25,65 Q50,25 78,52 L70,62 Q50,40 32,74 Z" fill="#eee" stroke-width="2" /></svg></div>
+          <div class="card-name">Boomerang</div><div class="card-subtext">RETURN AIRFOIL</div>
+        </div>
+        <div class="card-bottom"><div class="card-loop-hint"><span><b>Act:</b> Does not fly away forever</span><span><b>Stat:</b> Does not fly straight</span><span><b>Anat:</b> Has no motorized propellers</span><span><b>Tax:</b> Not a drone</span></div></div>
+      </div>
+
+      <!-- CARD BACK EXAMPLE / ANTIMEMETIC LOGO CARD -->
+      <div class="card card-back">
+        <div>
+          <div class="redacted-bar">TOP SECRET // UNOFFICIAL FAN GAME</div>
+          <h2>THERE IS NO ANTIMEMETICS PARTY GAME</h2>
+        </div>
+        <div class="back-logo">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#ffd000" stroke-width="4">
+            <circle cx="50" cy="50" r="38" />
+            <polygon points="50,20 76,66 24,66" stroke="#fff" stroke-width="3" />
+            <circle cx="50" cy="52" r="8" fill="#ffd000" />
+            <line x1="50" y1="12" x2="50" y2="88" stroke-dasharray="4,4" />
+          </svg>
+        </div>
+        <div>
+          <div style="font-family: 'Share Tech Mono', monospace; font-size: 6pt; color: #a1a1aa; line-height: 1.3;">
+            UNOFFICIAL FAN TRIBUTE<br>
+            NO AFFILIATION WITH QNTM OR AUTHORS
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sheet-footer">
+      <span>SCP ANTIMEMETICS DIVISION // UNOFFICIAL FAN WORK</span>
+      <span>PAGE 7 OF 13 - SUBJECTS 46-50 &amp; CARD BACK</span>
+    </div>
+  </div>
+
+    <!-- ==================== SHEET 8: FIELD DIRECTIVE INDEX [FRONT: UNITS 01 - 04] ==================== -->
+  <div class="sheet">
+    <div class="sheet-header">
+      <span class="sheet-title">EQUIPMENT // FIELD DIRECTIVE INDEX (GAMEPLAY RECAP) [FRONT: UNITS 01 - 04]</span>
+      <span>PAGE 8 OF 13</span>
+    </div>
+
+    <div class="directives-grid">
+      <!-- DIRECTIVE CARD 01 (FRONT) -->
+      <div class="directive-card">
+        <div class="directive-header">
+          <span>FIELD DIRECTIVE INDEX [UNIT 01]</span>
+          <span>AGENT CLEARANCE ALPHA</span>
+        </div>
+        <div class="lockdown-indicator">
+          ⚠️ <b>COGNITIVE LOCKDOWN PROTOCOL:</b><br>
+          Rotate card 90° clockwise (tapped position) immediately upon an incorrect guess. You may not speak or guess again for the remainder of this round.
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-around;">
+          <div class="recap-step">
+            <div class="recap-step-title"><span>1. INITIALIZATION</span><span>[SETUP]</span></div>
+            Reveal 5–7 cards. All memorize (15s). Flip face-down &amp; shuffle (amnesia). Active Researcher secretly draws 1: <b>The Anomaly</b>.
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>2. DEGRADATION LOOP</span><span>[CLUES]</span></div>
+            Start with 1 token. Say: <i>Does not [verb] / Is not [adj] / Has no [part] / Not a [cat]</i>. Complete loop = <b>+1 Token</b>. Positive fact = breach (0 pts)!
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>3. INTERCEPTION</span><span>[THE GUESS]</span></div>
+            Hit buzzer anytime &rarr; <b>Researcher stops speaking</b>. Exactly 1 guess. Wrong = 90° Lockdown (Researcher resumes loop).
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>4. SCORING &amp; VICTORY</span><span>[END]</span></div>
+            • <b>Correct:</b> Researcher &amp; guesser win all Matrix tokens. First to <b>7 pts wins!</b><br>
+            • <b>Last Player Rule:</b> If only 1 player remains unlocked, round ends immediately (0 pts)!
+          </div>
+        </div>
+        <div class="directive-footer">
+          <span>SCP ANTIMEMETICS DIVISION</span>
+          <span>CLEARANCE LEVEL 4 // CLASSIFIED</span>
+        </div>
+      </div>
+      <!-- DIRECTIVE CARD 02 (FRONT) -->
+      <div class="directive-card">
+        <div class="directive-header">
+          <span>FIELD DIRECTIVE INDEX [UNIT 02]</span>
+          <span>AGENT CLEARANCE BETA</span>
+        </div>
+        <div class="lockdown-indicator">
+          ⚠️ <b>COGNITIVE LOCKDOWN PROTOCOL:</b><br>
+          Rotate card 90° clockwise (tapped position) immediately upon an incorrect guess. You may not speak or guess again for the remainder of this round.
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-around;">
+          <div class="recap-step">
+            <div class="recap-step-title"><span>1. INITIALIZATION</span><span>[SETUP]</span></div>
+            Reveal 5–7 cards. All memorize (15s). Flip face-down &amp; shuffle (amnesia). Active Researcher secretly draws 1: <b>The Anomaly</b>.
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>2. DEGRADATION LOOP</span><span>[CLUES]</span></div>
+            Start with 1 token. Say: <i>Does not [verb] / Is not [adj] / Has no [part] / Not a [cat]</i>. Complete loop = <b>+1 Token</b>. Positive fact = breach (0 pts)!
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>3. INTERCEPTION</span><span>[THE GUESS]</span></div>
+            Hit buzzer anytime &rarr; <b>Researcher stops speaking</b>. Exactly 1 guess. Wrong = 90° Lockdown (Researcher resumes loop).
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>4. SCORING &amp; VICTORY</span><span>[END]</span></div>
+            • <b>Correct:</b> Researcher &amp; guesser win all Matrix tokens. First to <b>7 pts wins!</b><br>
+            • <b>Last Player Rule:</b> If only 1 player remains unlocked, round ends immediately (0 pts)!
+          </div>
+        </div>
+        <div class="directive-footer">
+          <span>SCP ANTIMEMETICS DIVISION</span>
+          <span>CLEARANCE LEVEL 4 // CLASSIFIED</span>
+        </div>
+      </div>
+      <!-- DIRECTIVE CARD 03 (FRONT) -->
+      <div class="directive-card">
+        <div class="directive-header">
+          <span>FIELD DIRECTIVE INDEX [UNIT 03]</span>
+          <span>AGENT CLEARANCE GAMMA</span>
+        </div>
+        <div class="lockdown-indicator">
+          ⚠️ <b>COGNITIVE LOCKDOWN PROTOCOL:</b><br>
+          Rotate card 90° clockwise (tapped position) immediately upon an incorrect guess. You may not speak or guess again for the remainder of this round.
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-around;">
+          <div class="recap-step">
+            <div class="recap-step-title"><span>1. INITIALIZATION</span><span>[SETUP]</span></div>
+            Reveal 5–7 cards. All memorize (15s). Flip face-down &amp; shuffle (amnesia). Active Researcher secretly draws 1: <b>The Anomaly</b>.
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>2. DEGRADATION LOOP</span><span>[CLUES]</span></div>
+            Start with 1 token. Say: <i>Does not [verb] / Is not [adj] / Has no [part] / Not a [cat]</i>. Complete loop = <b>+1 Token</b>. Positive fact = breach (0 pts)!
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>3. INTERCEPTION</span><span>[THE GUESS]</span></div>
+            Hit buzzer anytime &rarr; <b>Researcher stops speaking</b>. Exactly 1 guess. Wrong = 90° Lockdown (Researcher resumes loop).
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>4. SCORING &amp; VICTORY</span><span>[END]</span></div>
+            • <b>Correct:</b> Researcher &amp; guesser win all Matrix tokens. First to <b>7 pts wins!</b><br>
+            • <b>Last Player Rule:</b> If only 1 player remains unlocked, round ends immediately (0 pts)!
+          </div>
+        </div>
+        <div class="directive-footer">
+          <span>SCP ANTIMEMETICS DIVISION</span>
+          <span>CLEARANCE LEVEL 4 // CLASSIFIED</span>
+        </div>
+      </div>
+      <!-- DIRECTIVE CARD 04 (FRONT) -->
+      <div class="directive-card">
+        <div class="directive-header">
+          <span>FIELD DIRECTIVE INDEX [UNIT 04]</span>
+          <span>AGENT CLEARANCE DELTA</span>
+        </div>
+        <div class="lockdown-indicator">
+          ⚠️ <b>COGNITIVE LOCKDOWN PROTOCOL:</b><br>
+          Rotate card 90° clockwise (tapped position) immediately upon an incorrect guess. You may not speak or guess again for the remainder of this round.
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-around;">
+          <div class="recap-step">
+            <div class="recap-step-title"><span>1. INITIALIZATION</span><span>[SETUP]</span></div>
+            Reveal 5–7 cards. All memorize (15s). Flip face-down &amp; shuffle (amnesia). Active Researcher secretly draws 1: <b>The Anomaly</b>.
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>2. DEGRADATION LOOP</span><span>[CLUES]</span></div>
+            Start with 1 token. Say: <i>Does not [verb] / Is not [adj] / Has no [part] / Not a [cat]</i>. Complete loop = <b>+1 Token</b>. Positive fact = breach (0 pts)!
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>3. INTERCEPTION</span><span>[THE GUESS]</span></div>
+            Hit buzzer anytime &rarr; <b>Researcher stops speaking</b>. Exactly 1 guess. Wrong = 90° Lockdown (Researcher resumes loop).
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>4. SCORING &amp; VICTORY</span><span>[END]</span></div>
+            • <b>Correct:</b> Researcher &amp; guesser win all Matrix tokens. First to <b>7 pts wins!</b><br>
+            • <b>Last Player Rule:</b> If only 1 player remains unlocked, round ends immediately (0 pts)!
+          </div>
+        </div>
+        <div class="directive-footer">
+          <span>SCP ANTIMEMETICS DIVISION</span>
+          <span>CLEARANCE LEVEL 4 // CLASSIFIED</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet-footer">
+      <span>SCP ANTIMEMETICS DIVISION // UNOFFICIAL FAN WORK</span>
+      <span>PAGE 8 OF 13 - FIELD DIRECTIVE INDEX [FRONT: UNITS 01-04] (UNOFFICIAL)</span>
+    </div>
+  </div>
+  <!-- ==================== SHEET 9: CONCEPTUAL REFERENCE MATRIX [REVERSE: UNITS 01 - 04] ==================== -->
+  <div class="sheet">
+    <div class="sheet-header">
+      <span class="sheet-title">EQUIPMENT // CONCEPTUAL REFERENCE MATRIX [REVERSE: UNITS 01 - 04] (UNOFFICIAL)</span>
+      <span>PAGE 9 OF 13</span>
+    </div>
+
+    <div class="directives-grid">
+      <!-- REFERENCE MATRIX CARD 02 (REVERSE) -->
+      <div class="matrix-card">
+        <div class="matrix-header">
+          <span>CONCEPTUAL REFERENCE MATRIX</span>
+          <span>UNIT 02 // REVERSE</span>
+        </div>
+        <div class="loop-track">
+          <div class="loop-title">🔄 THE DEGRADATION LOOP (NEGATIVE FORMULA)</div>
+          <div class="loop-slot">
+            <div class="slot-label">1. ACTION</div>
+            <div class="slot-phrase">"It does not [VERB]"</div>
+            <div class="slot-desc">E.g., Does not fly, does not float, does not ring, does not burn.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">2. STATE</div>
+            <div class="slot-phrase">"It is not [ADJECTIVE]"</div>
+            <div class="slot-desc">E.g., Is not soft, is not rigid, is not transparent, is not heavy.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">3. ANATOMY</div>
+            <div class="slot-phrase">"It has no [PROPERTY]"</div>
+            <div class="slot-desc">E.g., Has no wheels, has no cables, has no screen, has no blades.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">4. TAXONOMY</div>
+            <div class="slot-phrase">"It does not belong to [CATEGORY]"</div>
+            <div class="slot-desc">E.g., Not food, not apparel, not a vehicle, not a weapon.</div>
+          </div>
+        </div>
+        <div class="token-accum-track">
+          <div class="accum-title">
+            <span>RESEARCHER MATRIX TOKEN YIELD ZONE</span>
+            <span style="color: #b45309;">+1 PT PER LOOP</span>
+          </div>
+          <div class="accum-slots-row">
+            <div class="accum-slot"><span>1</span></div>
+            <div class="accum-slot"><span>2</span></div>
+            <div class="accum-slot"><span>3</span></div>
+            <div class="accum-slot"><span>4</span></div>
+            <div class="accum-slot"><span>5</span></div>
+            <div class="accum-slot"><span>6</span></div>
+            <div class="accum-slot win"><span>7★</span></div>
+          </div>
+        </div>
+        <div class="directive-footer">
+          <span>REVERSE SIDE // DUPE CHEAT SHEET</span>
+          <span>7 PTS = MEMETIC STABILIZATION</span>
+        </div>
+      </div>
+      <!-- REFERENCE MATRIX CARD 01 (REVERSE) -->
+      <div class="matrix-card">
+        <div class="matrix-header">
+          <span>CONCEPTUAL REFERENCE MATRIX</span>
+          <span>UNIT 01 // REVERSE</span>
+        </div>
+        <div class="loop-track">
+          <div class="loop-title">🔄 THE DEGRADATION LOOP (NEGATIVE FORMULA)</div>
+          <div class="loop-slot">
+            <div class="slot-label">1. ACTION</div>
+            <div class="slot-phrase">"It does not [VERB]"</div>
+            <div class="slot-desc">E.g., Does not fly, does not float, does not ring, does not burn.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">2. STATE</div>
+            <div class="slot-phrase">"It is not [ADJECTIVE]"</div>
+            <div class="slot-desc">E.g., Is not soft, is not rigid, is not transparent, is not heavy.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">3. ANATOMY</div>
+            <div class="slot-phrase">"It has no [PROPERTY]"</div>
+            <div class="slot-desc">E.g., Has no wheels, has no cables, has no screen, has no blades.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">4. TAXONOMY</div>
+            <div class="slot-phrase">"It does not belong to [CATEGORY]"</div>
+            <div class="slot-desc">E.g., Not food, not apparel, not a vehicle, not a weapon.</div>
+          </div>
+        </div>
+        <div class="token-accum-track">
+          <div class="accum-title">
+            <span>RESEARCHER MATRIX TOKEN YIELD ZONE</span>
+            <span style="color: #b45309;">+1 PT PER LOOP</span>
+          </div>
+          <div class="accum-slots-row">
+            <div class="accum-slot"><span>1</span></div>
+            <div class="accum-slot"><span>2</span></div>
+            <div class="accum-slot"><span>3</span></div>
+            <div class="accum-slot"><span>4</span></div>
+            <div class="accum-slot"><span>5</span></div>
+            <div class="accum-slot"><span>6</span></div>
+            <div class="accum-slot win"><span>7★</span></div>
+          </div>
+        </div>
+        <div class="directive-footer">
+          <span>REVERSE SIDE // DUPE CHEAT SHEET</span>
+          <span>7 PTS = MEMETIC STABILIZATION</span>
+        </div>
+      </div>
+      <!-- REFERENCE MATRIX CARD 04 (REVERSE) -->
+      <div class="matrix-card">
+        <div class="matrix-header">
+          <span>CONCEPTUAL REFERENCE MATRIX</span>
+          <span>UNIT 04 // REVERSE</span>
+        </div>
+        <div class="loop-track">
+          <div class="loop-title">🔄 THE DEGRADATION LOOP (NEGATIVE FORMULA)</div>
+          <div class="loop-slot">
+            <div class="slot-label">1. ACTION</div>
+            <div class="slot-phrase">"It does not [VERB]"</div>
+            <div class="slot-desc">E.g., Does not fly, does not float, does not ring, does not burn.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">2. STATE</div>
+            <div class="slot-phrase">"It is not [ADJECTIVE]"</div>
+            <div class="slot-desc">E.g., Is not soft, is not rigid, is not transparent, is not heavy.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">3. ANATOMY</div>
+            <div class="slot-phrase">"It has no [PROPERTY]"</div>
+            <div class="slot-desc">E.g., Has no wheels, has no cables, has no screen, has no blades.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">4. TAXONOMY</div>
+            <div class="slot-phrase">"It does not belong to [CATEGORY]"</div>
+            <div class="slot-desc">E.g., Not food, not apparel, not a vehicle, not a weapon.</div>
+          </div>
+        </div>
+        <div class="token-accum-track">
+          <div class="accum-title">
+            <span>RESEARCHER MATRIX TOKEN YIELD ZONE</span>
+            <span style="color: #b45309;">+1 PT PER LOOP</span>
+          </div>
+          <div class="accum-slots-row">
+            <div class="accum-slot"><span>1</span></div>
+            <div class="accum-slot"><span>2</span></div>
+            <div class="accum-slot"><span>3</span></div>
+            <div class="accum-slot"><span>4</span></div>
+            <div class="accum-slot"><span>5</span></div>
+            <div class="accum-slot"><span>6</span></div>
+            <div class="accum-slot win"><span>7★</span></div>
+          </div>
+        </div>
+        <div class="directive-footer">
+          <span>REVERSE SIDE // DUPE CHEAT SHEET</span>
+          <span>7 PTS = MEMETIC STABILIZATION</span>
+        </div>
+      </div>
+      <!-- REFERENCE MATRIX CARD 03 (REVERSE) -->
+      <div class="matrix-card">
+        <div class="matrix-header">
+          <span>CONCEPTUAL REFERENCE MATRIX</span>
+          <span>UNIT 03 // REVERSE</span>
+        </div>
+        <div class="loop-track">
+          <div class="loop-title">🔄 THE DEGRADATION LOOP (NEGATIVE FORMULA)</div>
+          <div class="loop-slot">
+            <div class="slot-label">1. ACTION</div>
+            <div class="slot-phrase">"It does not [VERB]"</div>
+            <div class="slot-desc">E.g., Does not fly, does not float, does not ring, does not burn.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">2. STATE</div>
+            <div class="slot-phrase">"It is not [ADJECTIVE]"</div>
+            <div class="slot-desc">E.g., Is not soft, is not rigid, is not transparent, is not heavy.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">3. ANATOMY</div>
+            <div class="slot-phrase">"It has no [PROPERTY]"</div>
+            <div class="slot-desc">E.g., Has no wheels, has no cables, has no screen, has no blades.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">4. TAXONOMY</div>
+            <div class="slot-phrase">"It does not belong to [CATEGORY]"</div>
+            <div class="slot-desc">E.g., Not food, not apparel, not a vehicle, not a weapon.</div>
+          </div>
+        </div>
+        <div class="token-accum-track">
+          <div class="accum-title">
+            <span>RESEARCHER MATRIX TOKEN YIELD ZONE</span>
+            <span style="color: #b45309;">+1 PT PER LOOP</span>
+          </div>
+          <div class="accum-slots-row">
+            <div class="accum-slot"><span>1</span></div>
+            <div class="accum-slot"><span>2</span></div>
+            <div class="accum-slot"><span>3</span></div>
+            <div class="accum-slot"><span>4</span></div>
+            <div class="accum-slot"><span>5</span></div>
+            <div class="accum-slot"><span>6</span></div>
+            <div class="accum-slot win"><span>7★</span></div>
+          </div>
+        </div>
+        <div class="directive-footer">
+          <span>REVERSE SIDE // DUPE CHEAT SHEET</span>
+          <span>7 PTS = MEMETIC STABILIZATION</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet-footer">
+      <span>SCP ANTIMEMETICS DIVISION // UNOFFICIAL FAN WORK</span>
+      <span>PAGE 9 OF 13 - CONCEPTUAL REFERENCE MATRIX [REVERSE: UNITS 01-04] (UNOFFICIAL)</span>
+    </div>
+  </div>
+  <!-- ==================== SHEET 10: FIELD DIRECTIVE INDEX [FRONT: UNITS 05 - 07 + CODEX] ==================== -->
+  <div class="sheet">
+    <div class="sheet-header">
+      <span class="sheet-title">EQUIPMENT // FIELD DIRECTIVE INDEX [FRONT: UNITS 05 - 07 + CODEX] (UNOFFICIAL)</span>
+      <span>PAGE 10 OF 13</span>
+    </div>
+
+    <div class="directives-grid">
+      <!-- DIRECTIVE CARD 05 (FRONT) -->
+      <div class="directive-card">
+        <div class="directive-header">
+          <span>FIELD DIRECTIVE INDEX [UNIT 05]</span>
+          <span>AGENT CLEARANCE EPSILON</span>
+        </div>
+        <div class="lockdown-indicator">
+          ⚠️ <b>COGNITIVE LOCKDOWN PROTOCOL:</b><br>
+          Rotate card 90° clockwise (tapped position) immediately upon an incorrect guess. You may not speak or guess again for the remainder of this round.
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-around;">
+          <div class="recap-step">
+            <div class="recap-step-title"><span>1. INITIALIZATION</span><span>[SETUP]</span></div>
+            Reveal 5–7 cards. All memorize (15s). Flip face-down &amp; shuffle (amnesia). Active Researcher secretly draws 1: <b>The Anomaly</b>.
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>2. DEGRADATION LOOP</span><span>[CLUES]</span></div>
+            Start with 1 token. Say: <i>Does not [verb] / Is not [adj] / Has no [part] / Not a [cat]</i>. Complete loop = <b>+1 Token</b>. Positive fact = breach (0 pts)!
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>3. INTERCEPTION</span><span>[THE GUESS]</span></div>
+            Hit buzzer anytime &rarr; <b>Researcher stops speaking</b>. Exactly 1 guess. Wrong = 90° Lockdown (Researcher resumes loop).
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>4. SCORING &amp; VICTORY</span><span>[END]</span></div>
+            • <b>Correct:</b> Researcher &amp; guesser win all Matrix tokens. First to <b>7 pts wins!</b><br>
+            • <b>Last Player Rule:</b> If only 1 player remains unlocked, round ends immediately (0 pts)!
+          </div>
+        </div>
+        <div class="directive-footer">
+          <span>SCP ANTIMEMETICS DIVISION</span>
+          <span>CLEARANCE LEVEL 4 // CLASSIFIED</span>
+        </div>
+      </div>
+      <!-- DIRECTIVE CARD 06 (FRONT) -->
+      <div class="directive-card">
+        <div class="directive-header">
+          <span>FIELD DIRECTIVE INDEX [UNIT 06]</span>
+          <span>AGENT CLEARANCE ZETA</span>
+        </div>
+        <div class="lockdown-indicator">
+          ⚠️ <b>COGNITIVE LOCKDOWN PROTOCOL:</b><br>
+          Rotate card 90° clockwise (tapped position) immediately upon an incorrect guess. You may not speak or guess again for the remainder of this round.
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-around;">
+          <div class="recap-step">
+            <div class="recap-step-title"><span>1. INITIALIZATION</span><span>[SETUP]</span></div>
+            Reveal 5–7 cards. All memorize (15s). Flip face-down &amp; shuffle (amnesia). Active Researcher secretly draws 1: <b>The Anomaly</b>.
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>2. DEGRADATION LOOP</span><span>[CLUES]</span></div>
+            Start with 1 token. Say: <i>Does not [verb] / Is not [adj] / Has no [part] / Not a [cat]</i>. Complete loop = <b>+1 Token</b>. Positive fact = breach (0 pts)!
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>3. INTERCEPTION</span><span>[THE GUESS]</span></div>
+            Hit buzzer anytime &rarr; <b>Researcher stops speaking</b>. Exactly 1 guess. Wrong = 90° Lockdown (Researcher resumes loop).
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>4. SCORING &amp; VICTORY</span><span>[END]</span></div>
+            • <b>Correct:</b> Researcher &amp; guesser win all Matrix tokens. First to <b>7 pts wins!</b><br>
+            • <b>Last Player Rule:</b> If only 1 player remains unlocked, round ends immediately (0 pts)!
+          </div>
+        </div>
+        <div class="directive-footer">
+          <span>SCP ANTIMEMETICS DIVISION</span>
+          <span>CLEARANCE LEVEL 4 // CLASSIFIED</span>
+        </div>
+      </div>
+      <!-- DIRECTIVE CARD 07 (FRONT) -->
+      <div class="directive-card">
+        <div class="directive-header">
+          <span>FIELD DIRECTIVE INDEX [UNIT 07]</span>
+          <span>AGENT CLEARANCE ETA</span>
+        </div>
+        <div class="lockdown-indicator">
+          ⚠️ <b>COGNITIVE LOCKDOWN PROTOCOL:</b><br>
+          Rotate card 90° clockwise (tapped position) immediately upon an incorrect guess. You may not speak or guess again for the remainder of this round.
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-around;">
+          <div class="recap-step">
+            <div class="recap-step-title"><span>1. INITIALIZATION</span><span>[SETUP]</span></div>
+            Reveal 5–7 cards. All memorize (15s). Flip face-down &amp; shuffle (amnesia). Active Researcher secretly draws 1: <b>The Anomaly</b>.
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>2. DEGRADATION LOOP</span><span>[CLUES]</span></div>
+            Start with 1 token. Say: <i>Does not [verb] / Is not [adj] / Has no [part] / Not a [cat]</i>. Complete loop = <b>+1 Token</b>. Positive fact = breach (0 pts)!
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>3. INTERCEPTION</span><span>[THE GUESS]</span></div>
+            Hit buzzer anytime &rarr; <b>Researcher stops speaking</b>. Exactly 1 guess. Wrong = 90° Lockdown (Researcher resumes loop).
+          </div>
+          <div class="recap-step">
+            <div class="recap-step-title"><span>4. SCORING &amp; VICTORY</span><span>[END]</span></div>
+            • <b>Correct:</b> Researcher &amp; guesser win all Matrix tokens. First to <b>7 pts wins!</b><br>
+            • <b>Last Player Rule:</b> If only 1 player remains unlocked, round ends immediately (0 pts)!
+          </div>
+        </div>
+        <div class="directive-footer">
+          <span>SCP ANTIMEMETICS DIVISION</span>
+          <span>CLEARANCE LEVEL 4 // CLASSIFIED</span>
+        </div>
+      </div>
+      <!-- PROTOCOL CODEX CARD (FRONT) -->
+      <div class="directive-card" style="background: #fafaf9;">
+        <div class="directive-header" style="background: #dc2626; color: #fff;">
+          <span>CONTAINMENT CODEX // CLASSIFIED</span>
+          <span>FIELD ADVISORY</span>
+        </div>
+        <div class="lockdown-indicator" style="background: #fef3c7; border-left-color: #d97706;">
+          ⚠️ <b>ANTIMEMETIC COGNITIVE CAUTION:</b><br>
+          An antimeme is an idea with self-censoring properties. You cannot describe what it is without contaminating the local cognitive baseline.
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-around; font-size: 6.5pt; line-height: 1.4;">
+          <div style="border-left: 2px solid #b45309; padding-left: 4px;">
+            <b style="font-family: monospace; color: #b45309;">THE RESEARCHER'S OBLIGATION:</b><br>
+            You must never pause indefinitely. Speak the 4 loop vectors rhythmically. If you slip and state a positive property ("It is metallic..."), you trigger a localized cognitive breach: the round ends instantly with 0 points awarded.
+          </div>
+          <div style="border-left: 2px solid #b45309; padding-left: 4px;">
+            <b style="font-family: monospace; color: #b45309;">THE TIMING OF THE SLAM:</b><br>
+            Agents may strike the Soft Override Interface at any moment during or between loops. The Active Researcher must halt their sentence immediately upon the buzzer slam.
+          </div>
+          <div style="border-left: 2px solid #b45309; padding-left: 4px;">
+            <b style="font-family: monospace; color: #b45309;">RECOMMENDED TABLE LAYOUT:</b><br>
+            Place the Soft Override Buzzer precisely equidistant from all Agents. Keep the face-down anomaly memory pool organized in an arc.
+          </div>
+        </div>
+        <div class="directive-footer">
+          <span>SCP FOUNDATION // O5 APPROVED</span>
+          <span>STANDARD PROTOCOL</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet-footer">
+      <span>SCP ANTIMEMETICS DIVISION // UNOFFICIAL FAN WORK</span>
+      <span>PAGE 10 OF 13 - FIELD DIRECTIVE INDEX [FRONT: UNITS 05-07] (UNOFFICIAL)</span>
+    </div>
+  </div>
+  <!-- ==================== SHEET 11: CONCEPTUAL REFERENCE MATRIX [REVERSE: UNITS 05 - 07 + CODEX SEAL] ==================== -->
+  <div class="sheet">
+    <div class="sheet-header">
+      <span class="sheet-title">EQUIPMENT // CONCEPTUAL REFERENCE MATRIX [REVERSE: UNITS 05 - 07] (UNOFFICIAL)</span>
+      <span>PAGE 11 OF 13</span>
+    </div>
+
+    <div class="directives-grid">
+      <!-- REFERENCE MATRIX CARD 06 (REVERSE) -->
+      <div class="matrix-card">
+        <div class="matrix-header">
+          <span>CONCEPTUAL REFERENCE MATRIX</span>
+          <span>UNIT 06 // REVERSE</span>
+        </div>
+        <div class="loop-track">
+          <div class="loop-title">🔄 THE DEGRADATION LOOP (NEGATIVE FORMULA)</div>
+          <div class="loop-slot">
+            <div class="slot-label">1. ACTION</div>
+            <div class="slot-phrase">"It does not [VERB]"</div>
+            <div class="slot-desc">E.g., Does not fly, does not float, does not ring, does not burn.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">2. STATE</div>
+            <div class="slot-phrase">"It is not [ADJECTIVE]"</div>
+            <div class="slot-desc">E.g., Is not soft, is not rigid, is not transparent, is not heavy.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">3. ANATOMY</div>
+            <div class="slot-phrase">"It has no [PROPERTY]"</div>
+            <div class="slot-desc">E.g., Has no wheels, has no cables, has no screen, has no blades.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">4. TAXONOMY</div>
+            <div class="slot-phrase">"It does not belong to [CATEGORY]"</div>
+            <div class="slot-desc">E.g., Not food, not apparel, not a vehicle, not a weapon.</div>
+          </div>
+        </div>
+        <div class="token-accum-track">
+          <div class="accum-title">
+            <span>RESEARCHER MATRIX TOKEN YIELD ZONE</span>
+            <span style="color: #b45309;">+1 PT PER LOOP</span>
+          </div>
+          <div class="accum-slots-row">
+            <div class="accum-slot"><span>1</span></div>
+            <div class="accum-slot"><span>2</span></div>
+            <div class="accum-slot"><span>3</span></div>
+            <div class="accum-slot"><span>4</span></div>
+            <div class="accum-slot"><span>5</span></div>
+            <div class="accum-slot"><span>6</span></div>
+            <div class="accum-slot win"><span>7★</span></div>
+          </div>
+        </div>
+        <div class="directive-footer">
+          <span>REVERSE SIDE // DUPE CHEAT SHEET</span>
+          <span>7 PTS = MEMETIC STABILIZATION</span>
+        </div>
+      </div>
+      <!-- REFERENCE MATRIX CARD 05 (REVERSE) -->
+      <div class="matrix-card">
+        <div class="matrix-header">
+          <span>CONCEPTUAL REFERENCE MATRIX</span>
+          <span>UNIT 05 // REVERSE</span>
+        </div>
+        <div class="loop-track">
+          <div class="loop-title">🔄 THE DEGRADATION LOOP (NEGATIVE FORMULA)</div>
+          <div class="loop-slot">
+            <div class="slot-label">1. ACTION</div>
+            <div class="slot-phrase">"It does not [VERB]"</div>
+            <div class="slot-desc">E.g., Does not fly, does not float, does not ring, does not burn.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">2. STATE</div>
+            <div class="slot-phrase">"It is not [ADJECTIVE]"</div>
+            <div class="slot-desc">E.g., Is not soft, is not rigid, is not transparent, is not heavy.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">3. ANATOMY</div>
+            <div class="slot-phrase">"It has no [PROPERTY]"</div>
+            <div class="slot-desc">E.g., Has no wheels, has no cables, has no screen, has no blades.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">4. TAXONOMY</div>
+            <div class="slot-phrase">"It does not belong to [CATEGORY]"</div>
+            <div class="slot-desc">E.g., Not food, not apparel, not a vehicle, not a weapon.</div>
+          </div>
+        </div>
+        <div class="token-accum-track">
+          <div class="accum-title">
+            <span>RESEARCHER MATRIX TOKEN YIELD ZONE</span>
+            <span style="color: #b45309;">+1 PT PER LOOP</span>
+          </div>
+          <div class="accum-slots-row">
+            <div class="accum-slot"><span>1</span></div>
+            <div class="accum-slot"><span>2</span></div>
+            <div class="accum-slot"><span>3</span></div>
+            <div class="accum-slot"><span>4</span></div>
+            <div class="accum-slot"><span>5</span></div>
+            <div class="accum-slot"><span>6</span></div>
+            <div class="accum-slot win"><span>7★</span></div>
+          </div>
+        </div>
+        <div class="directive-footer">
+          <span>REVERSE SIDE // DUPE CHEAT SHEET</span>
+          <span>7 PTS = MEMETIC STABILIZATION</span>
+        </div>
+      </div>
+      <!-- PROTOCOL CODEX CARD (REVERSE) -->
+      <div class="matrix-card" style="background: #0f1115; color: #e5e7eb; border-color: #ffd000;">
+        <div class="matrix-header" style="background: #ffd000; color: #000;">
+          <span>DIVISION INSIGNIA &amp; SEAL</span>
+          <span>AUTHORIZATION</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; padding: 4mm;">
+          <svg viewBox="0 0 100 100" width="48mm" height="48mm" fill="none" stroke="#ffd000" stroke-width="3">
+            <circle cx="50" cy="50" r="42" />
+            <polygon points="50,16 80,68 20,68" stroke="#fff" stroke-width="2.5" />
+            <circle cx="50" cy="50" r="10" fill="#ffd000" />
+            <line x1="50" y1="8" x2="50" y2="92" stroke-dasharray="4,4" />
+          </svg>
+          <div style="font-family: monospace; font-size: 8pt; font-weight: bold; color: #ffd000; letter-spacing: 1.5px; margin-top: 3mm;">
+            THERE IS NO ANTIMEMETICS DIVISION
+          </div>
+          <div style="font-family: monospace; font-size: 6pt; color: #9ca3af; margin-top: 1mm;">
+            MEMETIC STABILIZATION UNIT CACHE // O5-CLEARANCE ONLY
+          </div>
+        </div>
+        <div class="directive-footer" style="color: #71717a; border-top-color: #333;">
+          <span>COUNTER-CONCEPTUAL DIVISION</span>
+          <span>EYES ONLY</span>
+        </div>
+      </div>
+      <!-- REFERENCE MATRIX CARD 07 (REVERSE) -->
+      <div class="matrix-card">
+        <div class="matrix-header">
+          <span>CONCEPTUAL REFERENCE MATRIX</span>
+          <span>UNIT 07 // REVERSE</span>
+        </div>
+        <div class="loop-track">
+          <div class="loop-title">🔄 THE DEGRADATION LOOP (NEGATIVE FORMULA)</div>
+          <div class="loop-slot">
+            <div class="slot-label">1. ACTION</div>
+            <div class="slot-phrase">"It does not [VERB]"</div>
+            <div class="slot-desc">E.g., Does not fly, does not float, does not ring, does not burn.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">2. STATE</div>
+            <div class="slot-phrase">"It is not [ADJECTIVE]"</div>
+            <div class="slot-desc">E.g., Is not soft, is not rigid, is not transparent, is not heavy.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">3. ANATOMY</div>
+            <div class="slot-phrase">"It has no [PROPERTY]"</div>
+            <div class="slot-desc">E.g., Has no wheels, has no cables, has no screen, has no blades.</div>
+          </div>
+          <div class="loop-slot">
+            <div class="slot-label">4. TAXONOMY</div>
+            <div class="slot-phrase">"It does not belong to [CATEGORY]"</div>
+            <div class="slot-desc">E.g., Not food, not apparel, not a vehicle, not a weapon.</div>
+          </div>
+        </div>
+        <div class="token-accum-track">
+          <div class="accum-title">
+            <span>RESEARCHER MATRIX TOKEN YIELD ZONE</span>
+            <span style="color: #b45309;">+1 PT PER LOOP</span>
+          </div>
+          <div class="accum-slots-row">
+            <div class="accum-slot"><span>1</span></div>
+            <div class="accum-slot"><span>2</span></div>
+            <div class="accum-slot"><span>3</span></div>
+            <div class="accum-slot"><span>4</span></div>
+            <div class="accum-slot"><span>5</span></div>
+            <div class="accum-slot"><span>6</span></div>
+            <div class="accum-slot win"><span>7★</span></div>
+          </div>
+        </div>
+        <div class="directive-footer">
+          <span>REVERSE SIDE // DUPE CHEAT SHEET</span>
+          <span>7 PTS = MEMETIC STABILIZATION</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet-footer">
+      <span>SCP ANTIMEMETICS DIVISION // UNOFFICIAL FAN WORK</span>
+      <span>PAGE 11 OF 13 - CONCEPTUAL REFERENCE MATRIX [REVERSE: UNITS 05-07] (UNOFFICIAL)</span>
+    </div>
+  </div>
+  <!-- ==================== SHEET 12: 44 SECURE POINT TOKENS CACHE ==================== -->
+  <div class="sheet">
+    <div class="sheet-header">
+      <span class="sheet-title">EQUIPMENT // 44X SECURE POINT TOKENS (PUNCHBOARD SHEET)</span>
+      <span>PAGE 12 OF 13</span>
+    </div>
+
+    <div style="text-align: center; margin: 4mm 0 6mm 0;">
+      <h3 style="font-family: 'Share Tech Mono', monospace; font-size: 10pt; letter-spacing: 1px;">COMPLETE 44-TOKEN CACHE // MEMETIC RESISTANCE YIELD UNITS</h3>
+      <p style="font-size: 7.5pt; color: #555;">Cut along dashed outer borders. Each token represents 1 Yield Point accumulated during Degradation Loops.</p>
+    </div>
+
+    <div class="tokens-grid" style="grid-template-columns: repeat(6, 25mm); grid-auto-rows: 25mm; gap: 4mm; justify-content: center;">
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #01</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #02</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #03</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #04</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #05</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #06</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #07</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #08</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #09</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #10</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #11</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #12</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #13</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #14</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #15</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #16</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #17</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #18</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #19</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #20</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #21</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #22</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #23</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #24</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #25</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #26</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #27</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #28</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #29</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #30</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #31</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #32</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #33</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #34</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #35</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #36</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #37</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #38</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #39</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #40</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #41</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #42</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #43</div>
+      </div>
+      <div class="token" style="width: 25mm; height: 25mm;">
+        <div class="token-pts" style="font-size: 11pt;">1</div>
+        <div class="token-label" style="font-size: 4.5pt;">YIELD #44</div>
+      </div>
+    </div>
+
+    <div class="sheet-footer">
+      <span>SCP ANTIMEMETICS DIVISION // UNOFFICIAL FAN WORK</span>
+      <span>PAGE 12 OF 13 - 44 SECURE POINT TOKENS CACHE (UNOFFICIAL)</span>
+    </div>
+  </div>
+  <!-- ==================== SHEET 13: SOFT OVERRIDE INTERFACE (BUZZER PAD) ==================== -->
+  <div class="sheet">
+    <div class="sheet-header">
+      <span class="sheet-title">TACTICAL HARDWARE // SOFT OVERRIDE INTERFACE (UNOFFICIAL)</span>
+      <span>PAGE 13 OF 13</span>
+    </div>
+
+    <div style="text-align: center; margin-top: 10px;">
+      <h3 style="font-family: 'Share Tech Mono', monospace; font-size: 11pt; letter-spacing: 1px;">TACTICAL SOFT OVERRIDE TARGET (EMERGENCY SLAM PAD) [UNOFFICIAL]</h3>
+      <p style="font-size: 8pt; color: #555; max-width: 140mm; margin: 4px auto;">
+        If the physical high-density foam buzzer is unavailable, place this target pad in the center of the table. Agents strike the pad with an open palm to register their interception!
+      </p>
+    </div>
+
+    <div class="buzzer-pad-target">
+      <div class="buzzer-hazard-ring"></div>
+      <div class="buzzer-title">SOFT OVERRIDE</div>
+      <div class="buzzer-sub">SLAM HERE TO INTERCEPT</div>
+      <div style="font-family: 'Share Tech Mono', monospace; font-size: 8pt; font-weight: bold; color: #000; margin-top: 4px;">
+        1 GUESS PER AGENT // COGNITIVE LOCKDOWN ON FAILURE
+      </div>
+      <div style="margin-top: 12px; width: 60px; height: 60px; border: 3px solid #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff;">
+        <svg viewBox="0 0 100 100" width="36" height="36"><path d="M50,15 L50,85 M20,40 L50,15 L80,40" stroke="#000" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      </div>
+    </div>
+
+    <div class="sheet-footer">
+      <span>SCP ANTIMEMETICS DIVISION // UNOFFICIAL FAN WORK</span>
+      <span>PAGE 13 OF 13 - SOFT OVERRIDE SLAM TARGET (UNOFFICIAL)</span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
